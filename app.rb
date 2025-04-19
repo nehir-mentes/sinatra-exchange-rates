@@ -1,9 +1,28 @@
 require "sinatra"
 require "sinatra/reloader"
+require "dotenv/load"
 
+# Pull in the HTTP class
+require "http"
+
+# define a route for the homepage
 get("/") do
-  "
-  <h1>Welcome to your Sinatra App!</h1>
-  <p>Define some routes in app.rb</p>
-  "
+
+  # Assemble the API url, including the API key in the query string
+  api_url = "https://api.exchangerate.host/list?access_key=#{ENV.fetch("EXCHANGE_RATE_KEY")}"
+
+  # Use HTTP.get to retrieve the API data
+  @raw_response = HTTP.get(api_url)
+
+  # Get the body of the response as a string
+  @raw_string = @raw_response.to_s
+
+  # Convert the string to JSON
+  @parsed_data = JSON.parse(@raw_string)
+
+  # View the currencies
+  @currencies = @parsed_data.fetch("currencies")
+
+  # Render a view template
+  erb(:homepage)
 end
